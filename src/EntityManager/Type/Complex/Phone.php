@@ -21,7 +21,7 @@ class Phone implements IType, JsonSerializable {
 
 	/**
 	 * @param string $phoneNumber
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @throws TypeError
 	 */
 	public function __construct(string $phoneNumber) {
 
@@ -73,9 +73,9 @@ class Phone implements IType, JsonSerializable {
 	 * @param int|null $specialChar
 	 * @param int|null $transform
 	 * @param int|null $all
-	 * @return \QuickFeather\EntityManager\Type\IType|Phone|null
+	 * @return IType|Phone|null
 	 * @throws NullError
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @throws TypeError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

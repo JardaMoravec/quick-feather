@@ -23,7 +23,7 @@ class Link implements IType, JsonSerializable {
 
 	/**
 	 * @param string $email
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @throws TypeError
 	 */
 	public function __construct(string $email) {
 		if (strlen($email) > self::maxLength) {
@@ -84,7 +84,7 @@ class Link implements IType, JsonSerializable {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|Link|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 * @throws TypeError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,

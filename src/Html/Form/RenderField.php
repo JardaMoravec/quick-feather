@@ -2,7 +2,7 @@
 
 namespace QuickFeather\Html\Form;
 
-use Exception;
+
 use QuickFeather\Context;
 use QuickFeather\EntityManager\IEntity;
 use QuickFeather\EntityManager\ISelectUsable;
@@ -116,7 +116,7 @@ abstract class RenderField extends RenderCommon {
 		if ($elementId !== null) {
 			$attributes['id'] = $elementId;
 		}
-		if ($length !== null) {
+		if ($length !== null && $length > 0) {
 			$attributes['maxlength'] = $length;
 		}
 
@@ -159,7 +159,7 @@ abstract class RenderField extends RenderCommon {
 	 * @param bool|null $multiple
 	 * @param mixed|null $value
 	 * @return string
-	 * @throws Exception
+
 	 */
 	public static function renderSelect(string            $name,
 										string|null       $elementId = null,
@@ -292,7 +292,7 @@ abstract class RenderField extends RenderCommon {
 	 * @param bool|null $showAllOption
 	 * @param mixed|null $value
 	 * @return string
-	 * @throws Exception
+
 	 */
 	public static function renderCheckBoxList(string            $name,
 											  string|null       $elementId = null,

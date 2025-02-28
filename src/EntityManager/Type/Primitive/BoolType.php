@@ -14,13 +14,14 @@ class BoolType extends BaseType implements IPrimitiveType {
 	 * @param string|null $identifier
 	 * @param bool $required
 	 * @return bool|null
-	 * @throws \QuickFeather\EntityManager\Error\IdentifierError
+	 * @throws IdentifierError
 	 * @throws NullError
 	 */
 	public static function fromPost(?string $identifier, bool $required = false): ?bool {
 		if ($identifier === '' || $identifier === null) {
 			throw new IdentifierError('Identifier is empty!', static::class);
 		}
+
 		$value = filter_input(INPUT_POST, $identifier, FILTER_DEFAULT, FILTER_NULL_ON_FAILURE);
 		if ($value === null) {
 			return false;
@@ -32,8 +33,8 @@ class BoolType extends BaseType implements IPrimitiveType {
 	 * @param string $identifier
 	 * @param bool $required
 	 * @return bool|null
-	 * @throws \QuickFeather\EntityManager\Error\IdentifierError
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws IdentifierError
+	 * @throws NullError
 	 */
 	public static function fromGet(string $identifier, bool $required = false): ?bool {
 		self::checkIdentifier($_GET, $identifier, $required);

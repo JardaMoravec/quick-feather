@@ -77,14 +77,14 @@ class Password implements IType, JsonSerializable {
 	 * @param int|null $specialChar
 	 * @param int|null $transform
 	 * @param int|null $all
-	 * @return \QuickFeather\EntityManager\Type\IType|IdNumber|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @return IType|IdNumber|null
+	 * @throws NullError
+	 * @throws TypeError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,
 								   ?int  $separator = null, ?int $specialChar = null, ?int $transform = null,
-								   ?int $all = null): IType|IdNumber|null {
+								   ?int  $all = null): IType|IdNumber|null {
 		$value = StringType::fromVar($value, $required,
 			backSlash: BaseType::remove,
 			quote: BaseType::remove,

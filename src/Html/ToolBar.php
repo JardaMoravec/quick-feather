@@ -2,7 +2,7 @@
 
 namespace QuickFeather\Html;
 
-use Exception;
+
 use QuickFeather\Html\Button\BaseButton;
 
 
@@ -26,7 +26,7 @@ class ToolBar {
 
 	/**
 	 * @return void
-	 * @throws Exception
+
 	 */
 	public function create(): void {
 		if (($this->icon !== null && $this->icon !== '') || count($this->titles) > 0) {
@@ -54,7 +54,7 @@ class ToolBar {
 	}
 
 	/**
-	 * @param \QuickFeather\Html\Button\BaseButton $button
+	 * @param BaseButton $button
 	 * @return void
 	 */
 	public function addButton(BaseButton $button): void {

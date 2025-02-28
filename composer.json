@@ -1,0 +1,37 @@
+{
+  "name": "moravec/quick-feather",
+  "version": "2.1.0",
+  "description": "QuickFeather - PHP quick and light entity framework",
+  "authors": [
+    {
+      "name": "Jaroslav Moravec",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "mpdf/mpdf": "^8.0",
+    "ext-gettext": "*",
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "ext-simplexml": "*",
+    "ext-gd": "*",
+    "ext-fileinfo": "*",
+    "ext-dom": "*",
+    "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "QuickFeather\\" : "src/",
+      "Example\\" : "examples/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+        "Tests\\": "tests/"
+    }
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "phpunit/phpunit": "^9.5"
+  }
+}

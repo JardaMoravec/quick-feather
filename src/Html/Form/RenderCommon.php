@@ -12,7 +12,7 @@ abstract class RenderCommon {
 	 * @param string $name
 	 * @param string|null $suffix
 	 * @return string
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 */
 	public static function createUniqueId(string $name, string $suffix = null): string {
 		$elementId = StringType::fromVar($name,

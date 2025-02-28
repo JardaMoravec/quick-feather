@@ -49,6 +49,7 @@ class dbPdo extends PDO {
 	 * @return PDOStatement|false <b>PDO::query</b> returns a PDOStatement object, or <b>FALSE</b>
 	 * on failure.
 	 * @see PDOStatement::setFetchMode For a full description of the second and following parameters.
+	 * @throws PDOException
 	 */
 
 	public function query(string $query, int|null $fetchMode = PDO::ATTR_DEFAULT_FETCH_MODE, ...$fetch_mode_args): PDOStatement|false {

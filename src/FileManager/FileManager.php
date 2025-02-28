@@ -6,8 +6,7 @@ use JetBrains\PhpStorm\NoReturn;
 use QuickFeather\EntityManager\Error\NullError;
 use QuickFeather\EntityManager\Type\BaseType;
 use QuickFeather\EntityManager\Type\Primitive\StringType;
-use Tool\Message;
-
+use QuickFeather\EventLogger\Message;
 
 class FileManager {
 
@@ -24,7 +23,7 @@ class FileManager {
 	 * @param string|null $baseDir
 	 * @param string|null $entityDir
 	 * @return string|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 */
 	public static function uploadFromForm(string $name, ?string $baseDir = null, ?string $entityDir = null): ?string {
 		if (is_uploaded_file($_FILES[$name]['tmp_name'])) {
@@ -91,7 +90,7 @@ class FileManager {
 			exit;
 		}
 
-		//LogEventService::logEvent("File with id " . $file['id'] . " does not existing!", LogEventService::ERROR);
+		//LogEventService::logEvent("File with id " . $file['id'] . " does not existing!", \QuickFeather\EventLogger\EventLogger::ERROR);
 		header("HTTP/1.0 404 Not Found");
 		exit('File not found!');
 	}

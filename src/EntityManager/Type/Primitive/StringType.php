@@ -50,8 +50,8 @@ class StringType extends BaseType implements IPrimitiveType {
 	 * @param int|null $specialChar
 	 * @param int|null $all
 	 * @return string|null
-	 * @throws \QuickFeather\EntityManager\Error\IdentifierError
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws IdentifierError
+	 * @throws NullError
 	 */
 	public static function fromGet(?string $identifier, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int    $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

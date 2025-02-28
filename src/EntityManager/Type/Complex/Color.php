@@ -2,7 +2,6 @@
 
 namespace QuickFeather\EntityManager\Type\Complex;
 
-use JetBrains\PhpStorm\Immutable;
 use JsonSerializable;
 use QuickFeather\EntityManager\db;
 use QuickFeather\EntityManager\Error\EntityError;
@@ -19,7 +18,6 @@ class Color implements IType, JsonSerializable {
 
 	public const maxLength = 7;
 
-	#[immutable]
 	private string $value;
 
 	/**
@@ -77,8 +75,8 @@ class Color implements IType, JsonSerializable {
 	 * @param int|null $specialChar
 	 * @param int|null $transform
 	 * @param int|null $all
-	 * @return \QuickFeather\EntityManager\Type\IType|Color|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @return IType|Color|null
+	 * @throws NullError
 	 * @throws EntityError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,

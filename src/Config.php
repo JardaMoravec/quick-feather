@@ -4,12 +4,12 @@ namespace QuickFeather;
 
 use Dao\Base\Settings\SettingsDao;
 use Dao\Cms\Gallery\SizeSettingDao;
-use Entity\Base\Settings;
 use Entity\Cms\Gallery\SizeSetting;
 use PDO;
 use QuickFeather\EntityManager\db;
 use QuickFeather\EntityManager\Error\SQLError;
 use ReflectionException;
+use Entity\Base\Settings;
 use Service\Base\SettingsService;
 
 class Config {
@@ -43,7 +43,7 @@ class Config {
 	 * @param bool $isBackend
 	 * @param bool $withDatabaseConfig
 	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
 	 */
 	public function __construct(PDO $pdo, array $configArray, bool $isBackend, bool $withDatabaseConfig = true) {
 
@@ -103,7 +103,7 @@ class Config {
 	 * @param PDO $pdo
 	 * @return void
 	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
 	 */
 	private function loadImageSizes(PDO $pdo): void {
 		$imageSizes = SizeSettingDao::getList($pdo,
@@ -128,7 +128,7 @@ class Config {
 	 * @param PDO $pdo
 	 * @return void
 	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
 	 */
 	private function loadConfigFromDatabase(PDO $pdo): void {
 		$this->settings = SettingsDao::getOneById($pdo, SettingsService::DEFAULT_SETTING_ID);

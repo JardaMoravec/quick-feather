@@ -4,8 +4,10 @@ namespace QuickFeather\EntityManager;
 
 use DateTime;
 use PDO;
+use PDOException;
 use QuickFeather\EntityManager\Attributes\ColumnDefinition;
 use QuickFeather\EntityManager\Error\EntityError;
+use QuickFeather\EntityManager\Error\IdentifierError;
 use QuickFeather\EntityManager\Error\NullError;
 use QuickFeather\EntityManager\Error\SQLError;
 use QuickFeather\EntityManager\Error\TypeError;
@@ -19,7 +21,7 @@ use ReflectionException;
 use RuntimeException;
 
 /**
- * @template T of \QuickFeather\EntityManager\IEntity
+ * @template T of IEntity
  */
 readonly class Repository {
 	private array $properties;
@@ -29,6 +31,7 @@ readonly class Repository {
 	 * @param PDO $pdo
 	 * @param class-string<T> $entityClass
 	 * @throws ReflectionException
+	 * @throws RuntimeException
 	 */
 	public function __construct(private PDO    $pdo,
 								private string $entityClass
@@ -46,12 +49,14 @@ readonly class Repository {
 	 * @param int|null $limit
 	 * @param array|string|null $orderBy
 	 * @param array|null $addColumns
-	 * @return \QuickFeather\EntityManager\IEntity|null
+	 * @return IEntity|null
 	 * @throws NullError
 	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
 	 * @throws TypeError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws EntityError
+	 * @throws IdentifierError
+	 * @throws PDOException
 	 */
 	public function getOne(string|null       $where = null,
 						   int|null          $limit = null,
@@ -61,13 +66,17 @@ readonly class Repository {
 		$columns = [];
 		$joins = [];
 		foreach ($this->properties as $property) {
-			if ($property['isRemote'] && !in_array($property->getName(), $addColumns ?? [], true)) {
+			if ($property['isRemote'] && !in_array($property['name'], $addColumns ?? [], true)) {
 				continue;
 			}
 			$columns[] = $property['dbName'] . ' as "' . $property['const'] . '"';
 
-			$where = (string)$this->translateColumnName($property['const'], $property['dbName'], $where);
-			$orderBy = $this->translateColumnName($property['const'], $property['dbName'], $orderBy);
+			if ($where !== null) {
+				$where = (string)$this->translateColumnName($property['const'], $property['dbName'], $where);
+			}
+			if ($orderBy !== null) {
+				$orderBy = $this->translateColumnName($property['const'], $property['dbName'], $orderBy);
+			}
 
 			// when property is remote, we need to join it
 			if ($property['joinSource'] === null) {
@@ -100,12 +109,13 @@ readonly class Repository {
 	/**
 	 * @param int $id
 	 * @param array|null $addColumns
-	 * @return \QuickFeather\EntityManager\IEntity|null
+	 * @return IEntity|null
 	 * @throws NullError
 	 * @throws ReflectionException
 	 * @throws SQLError
 	 * @throws TypeError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws EntityError
+	 * @throws PDOException
 	 */
 	public function getOneById(int        $id,
 							   array|null $addColumns = null
@@ -118,20 +128,24 @@ readonly class Repository {
 	 * @param string|null $alias
 	 * @param string|null $where
 	 * @param string|array|null $groupBy
-	 * @return integer
+	 * @return integer|string
+	 * @throws NullError
 	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
+	 * @throws PDOException
 	 */
 	public function getAggregate(string            $aggregationColumn = 'count(*) AS count',
 								 string|null       $alias = "count",
 								 string|null       $where = null,
 								 string|array|null $groupBy = null
-	): int {
+	): int|string {
 		foreach ($this->properties as $property) {
 			$where = (string)$this->translateColumnName($property['const'], $property['dbName'], $where);
 			$groupBy = (array)$this->translateColumnName($property['const'], $property['dbName'], $groupBy);
 		}
 
-		return db::fetchCount(
+		return db::fetchAggregate(
 			sql: db::select(
 				columns: [$aggregationColumn],
 				source: ($this->entityClass)::source,
@@ -144,20 +158,20 @@ readonly class Repository {
 	}
 
 	/**
-	 * @param string $aggregationColumn
-	 * @param string|null $alias
 	 * @param string|null $where
 	 * @param string|array|null $groupBy
 	 * @return int
+	 * @throws NullError
 	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
+	 * @throws PDOException
 	 */
-	public function getCount(string            $aggregationColumn = 'count(*) AS count',
-							 string|null       $alias = "count",
-							 string|null       $where = null,
+	public function getCount(string|null       $where = null,
 							 string|array|null $groupBy = null
 	): int {
-		return $this->getAggregate($aggregationColumn, $alias, $where, $groupBy);
 
+		return (int)$this->getAggregate(where: $where, groupBy: $groupBy);
 	}
 
 	/**
@@ -166,7 +180,11 @@ readonly class Repository {
 	 * @param string|null $where
 	 * @param string|array|null $groupBy
 	 * @return int
+	 * @throws NullError
 	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
+	 * @throws PDOException
 	 */
 	public function getSum(string            $aggregationColumn = 'sum(*) AS sum',
 						   string|null       $alias = "sum",
@@ -186,10 +204,10 @@ readonly class Repository {
 	 * @param array|null $addColumns
 	 * @return array
 	 * @throws NullError
-	 * @throws ReflectionException
 	 * @throws SQLError
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @throws TypeError
 	 * @throws EntityError
+	 * @throws PDOException|ReflectionException
 	 */
 	public function getList(string|null       $where = null,
 							string|array|null $orderBy = null,
@@ -233,6 +251,7 @@ readonly class Repository {
 				limit: $limit, offset: $offset
 			), pdo: $this->pdo,
 		);
+
 		if (count($list) === 0) {
 			return [];
 		}
@@ -249,10 +268,11 @@ readonly class Repository {
 	 * @param array|null $addColumns
 	 * @return array
 	 * @throws NullError
-	 * @throws ReflectionException
 	 * @throws SQLError
 	 * @throws TypeError
+	 * @throws IdentifierError
 	 * @throws EntityError
+	 * @throws PDOException|ReflectionException
 	 */
 	public function getListByParameters(array       $parameters,
 										string|null $where = null,
@@ -295,14 +315,23 @@ readonly class Repository {
 	}
 
 	/**
-	 * @param \QuickFeather\EntityManager\IEntity $entity
+	 * @param IEntity $entity
 	 * @return int|null
 	 * @throws SQLError
-	 * @throws ReflectionException
+	 * @throws NullError
+	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
+	 * @throws PDOException
 	 */
 	public function insert(IEntity $entity): ?int {
 		$data = $this->entity2db($entity);
-		unset($data['id']);
+
+		foreach ($this->properties as $property) {
+			if ($property['primaryKey'] === true) {
+				unset($data[$property['dbName']]);
+			}
+		}
 
 		if (property_exists($entity, 'id')) {
 			$returning = ['id'];
@@ -319,11 +348,15 @@ readonly class Repository {
 	}
 
 	/**
-	 * @param \QuickFeather\EntityManager\IEntity $entity
+	 * @param IEntity $entity
 	 * @param string $where
 	 * @return bool
-	 * @throws ReflectionException
 	 * @throws SQLError
+	 * @throws NullError
+	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
+	 * @throws PDOException
 	 */
 	public function update(IEntity $entity, string $where): bool {
 		$data = $this->entity2db($entity);
@@ -336,21 +369,29 @@ readonly class Repository {
 	}
 
 	/**
-	 * @param \QuickFeather\EntityManager\IEntity $entity
+	 * @param IEntity $entity
 	 * @param int $id
 	 * @return bool
-	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
+	 * @throws NullError
+	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
+	 * @throws PDOException
 	 */
 	public function updateById(IEntity $entity, int $id): bool {
 		return $this->update($entity, db::pkIs($id));
 	}
 
 	/**
-	 * @param \QuickFeather\EntityManager\IEntity $entity
+	 * @param IEntity $entity
 	 * @return bool
-	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws NullError
+	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
+	 * @throws SQLError
+	 * @throws PDOException
 	 */
 	public function updateEntity(IEntity $entity): bool {
 		if (!property_exists($entity, 'id')) {
@@ -363,6 +404,8 @@ readonly class Repository {
 	 * @param int $id
 	 * @return bool
 	 * @throws SQLError
+	 * @throws EntityError
+	 * @throws PDOException
 	 */
 	public function deleteById(int $id): bool {
 		return $this->delete(db::pkIs($id));
@@ -372,12 +415,29 @@ readonly class Repository {
 	 * @param string $where
 	 * @return bool
 	 * @throws SQLError
+	 * @throws EntityError
+	 * @throws PDOException
 	 */
 	public function delete(string $where): bool {
 		return db::run(
 			sql: db::delete(($this->entityClass)::source, $where),
 			pdo: $this->pdo,
 		);
+	}
+
+	/**
+	 * @param IEntity $entity
+	 * @return bool
+	 * @throws SQLError
+	 * @throws EntityError
+	 * @throws PDOException
+	 */
+	public function deleteEntity(IEntity $entity): bool {
+		if (!property_exists($entity, 'id')) {
+			throw new SQLError('Entity has no ID');
+		}
+		return $this->deleteById($entity->id);
+
 	}
 
 	/**
@@ -389,14 +449,18 @@ readonly class Repository {
 	}
 
 	/**
-	 * @param \QuickFeather\EntityManager\IEntity $entity
+	 * @param IEntity $entity
 	 * @param array $data
-	 * @return \QuickFeather\EntityManager\IEntity
+	 * @return IEntity
+	 * @throws NullError
+	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
 	 */
 	public function fillFromArray(IEntity $entity, array $data): IEntity {
 		foreach ($this->properties as $property) {
-			if (array_key_exists($property['dbName'], $data)) {
-				$entity->{$property['name']} = $data[$property['dbName']];
+			if (array_key_exists($property['const'], $data)) {
+				$entity->{$property['name']} = $data[$property['const']];
 			}
 		}
 		return $entity;
@@ -405,19 +469,38 @@ readonly class Repository {
 	/**
 	 * @param string $columnName
 	 * @param string $dbName
-	 * @param array|string|null $subject
+	 * @param array|string|null $sqlQuery
 	 * @return array|string|null
+	 * @throws NullError
+	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
 	 */
-	private function translateColumnName(string $columnName, string $dbName, array|string|null $subject): array|string|null {
-		if ($subject === null) {
+	private function translateColumnName(string $columnName, string $dbName, array|string|null $sqlQuery): array|string|null {
+		if ($sqlQuery === null) {
 			return null;
 		}
-
-		if (is_array($subject)) {
-			return array_map(static fn($item) => str_replace($columnName, $dbName, $item), $subject);
+		// todo nenahrazovat pokud je mezi apostrofy
+		// todo testy na tuto funkci, aspoň 10
+		/*if (is_array($sqlQuery)) {
+			return array_map(static fn($item) => str_replace($columnName, $dbName, $item), $sqlQuery);
 		}
 
-		return str_replace($columnName, $dbName, $subject);
+		return str_replace($columnName, $dbName, $sqlQuery);
+		*/
+		if (is_array($sqlQuery)) {
+			return array_map(static fn($item) => preg_replace_callback(
+				"/'[^']*'(*SKIP)(*F)|\b" . preg_quote($columnName, '/') . "\b/",
+				static fn($match) => $dbName,
+				$item
+			), $sqlQuery);
+		}
+
+		return preg_replace_callback(
+			"/'[^']*'(*SKIP)(*F)|\b" . preg_quote($columnName, '/') . "\b/",
+			static fn($match) => $dbName,
+			$sqlQuery
+		);
 	}
 
 	/**
@@ -449,12 +532,13 @@ readonly class Repository {
 			if (count($attributes) === 0) {
 				throw new ReflectionException('Missing ColumnDefinition attribute for ' . $property->getName() . ' in ' . $this->entityClass);
 			}
-			/** @var \QuickFeather\EntityManager\Attributes\ColumnDefinition $columnDefinition */
+			/** @var ColumnDefinition $columnDefinition */
 			$columnDefinition = $attributes[0]->newInstance();
 
 			$item['name'] = $property->getName();
-			$item['const'] = constant($this->entityClass . '::' . $property->getName());
+			$item['const'] = strtolower(constant($this->entityClass . '::' . $property->getName()));
 			$item['isRemote'] = $this->entityClass::source !== $columnDefinition->sourceTable;
+
 			if ($item['isRemote']) {
 				$item['dbName'] = $columnDefinition->dbColumn;
 			} else {
@@ -462,6 +546,7 @@ readonly class Repository {
 			}
 			$item['type'] = $property->getType()?->getName();
 			$item['null'] = $property->getType()?->allowsNull();
+			$item['primaryKey'] = $columnDefinition->primaryKey ?? false;
 			if (str_contains($item['type'], 'String')) {
 				$item['length'] = (int)substr($item['type'], strrpos($item['type'], 'String') + 6);
 			}
@@ -483,33 +568,43 @@ readonly class Repository {
 				}
 			}
 		}
+		unset($item);
+
 		return $result;
 	}
 
 	/**
 	 * @param array $data
-	 * @param array|null $addColumns
-	 * @return \QuickFeather\EntityManager\IEntity
-	 * @throws NullError
-	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @return IEntity
 	 */
-	private function db2entity(array $data, array|null $addColumns = null): IEntity {
-		$data = $this->db2array($data, $addColumns);
+	public function array2entity(array $data): IEntity {
 		return ($this->entityClass)::array2entity($data);
 	}
 
 	/**
 	 * @param array $data
 	 * @param array|null $addColumns
+	 * @return IEntity
+	 * @throws NullError
+	 * @throws TypeError
+	 * @throws EntityError|ReflectionException
+	 */
+	private function db2entity(array $data, array|null $addColumns = null): IEntity {
+		$data = $this->db2array($data, $addColumns);
+		return ($this->entityClass)::array2entity($data);
+	}
+
+
+	/**
+	 * @param array $data
+	 * @param array|null $addColumns
 	 * @return array
 	 * @throws NullError
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws TypeError
+	 * @throws EntityError
+	 * @throws ReflectionException
 	 */
 	private function db2array(array $data, array|null $addColumns = null): array {
-		//var_dump($data);die();
 		$output = [];
 		foreach ($this->properties as $property) {
 			if ($property['isRemote'] && !in_array($property['const'], $addColumns ?? [], true)) {
@@ -529,6 +624,33 @@ readonly class Repository {
 				if ($type === PgArray::class) {
 					$output[$property['const']] = new PgArray($data[$property['const']]);
 
+				} else if ($property['isRemote'] === true && in_array(IEntity::class, $interfaces, true)) {
+					$dbData = json_decode($data[$property['const']], true);
+					if ($dbData === null) {
+						$output[$property['const']] = null;
+					} else {
+						if (!is_array($dbData)) {
+							$dbData = [$dbData];
+						}
+
+						$repository = new self($this->pdo, $type);
+						$entity = [];
+						foreach ($dbData as $key => $dbRecord) {
+							$parts = explode('.', $type::source);
+							$tableName = end($parts);
+							foreach ($dbRecord as $name => $value) {
+								$dbRecord[$tableName . '.' . $name] = $value;
+								unset($dbRecord[$name]);
+							}
+							$array = $repository->db2array($dbRecord);
+							$entity[$key] = $array;
+						}
+						if (count($entity) === 1) {
+							$output[$property['const']] = $entity[0];
+						} else {
+							$output[$property['const']] = $entity;
+						}
+					}
 				} else if (
 					$type === DateTime::class ||
 					in_array(IType::class, $interfaces, true) ||
@@ -558,12 +680,17 @@ readonly class Repository {
 	/**
 	 * @param IEntity $entity
 	 * @return array
-	 * @throws ReflectionException
+	 * @throws NullError
+	 * @throws SQLError
+	 * @throws TypeError
+	 * @throws EntityError
 	 */
 	private function entity2db(IEntity $entity): array {
 		$output = [];
-		bdump($entity);
 		foreach ($this->properties as $property) {
+			if ($property['isRemote']) {
+				continue;
+			}
 			$propertyName = $property['name'];
 			$type = $property['type'];
 			if ($entity->$propertyName !== null) {
@@ -599,7 +726,6 @@ readonly class Repository {
 				$output[$property['dbName']] = null;
 			}
 		}
-		bdump($output);
 		return $output;
 	}
 }

@@ -2,7 +2,7 @@
 
 namespace QuickFeather\EntityManager\Error;
 
-use Throwable;
+use RuntimeException;
 
 
 class EntityError extends DataError {
@@ -15,9 +15,9 @@ class EntityError extends DataError {
 	 * @param string $entity
 	 * @param string|null $filter
 	 * @param int|null $code
-	 * @param Throwable|null $previous
+	 * @param RuntimeException|null $previous
 	 */
-	public function __construct(string $message, string $entity, ?string $filter = null, ?int $code = 0, ?Throwable $previous = null) {
+	public function __construct(string $message, string $entity, ?string $filter = null, ?int $code = 0, ?RuntimeException $previous = null) {
 		parent::__construct($message, $code, $previous);
 
 		$this->entity = $entity;

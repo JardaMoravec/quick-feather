@@ -20,7 +20,6 @@ class StringLimited implements IType, JsonSerializable {
 
 	/**
 	 * @param string $text
-	 * @throws EntityError
 	 */
 	public function __construct(string $text) {
 		$reflect = new ReflectionClass(static::class);
@@ -77,9 +76,7 @@ class StringLimited implements IType, JsonSerializable {
 	 * @param int|null $specialChar
 	 * @param int|null $transform
 	 * @param int|null $all
-	 * @return \QuickFeather\EntityManager\Type\IType|StringLimited|null
-	 * @throws NullError
-	 * @throws EntityError
+	 * @return IType|static|null
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

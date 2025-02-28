@@ -33,10 +33,10 @@ readonly class EntityManager {
 	 * @param string|null $orderBy
 	 * @return IEntity|null
 	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws SQLError
+	 * @throws NullError
+	 * @throws TypeError
+	 * @throws EntityError
 	 */
 	public function getOne(string $entityClass, ?string $where = null, ?int $limit = null, ?string $orderBy = null): IEntity|null {
 		return $this->getRepository($entityClass)->getOne($where, $limit, $orderBy);
@@ -46,9 +46,9 @@ readonly class EntityManager {
 	 * @param string $entityClass
 	 * @param int $id
 	 * @return IEntity|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
 	 * @throws TypeError
 	 * @throws EntityError
 	 */
@@ -77,21 +77,17 @@ readonly class EntityManager {
 
 	/**
 	 * @param string $entityClass
-	 * @param string $aggregationColumn
-	 * @param string|null $alias
 	 * @param string|null $where
 	 * @param string|array|null $groupBy
 	 * @return int
 	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
 	 */
 	public function getCount(string            $entityClass,
-							 string            $aggregationColumn = 'count(*) AS count',
-							 string|null       $alias = "count",
 							 string|null       $where = null,
 							 string|array|null $groupBy = null
 	): int {
-		return $this->getRepository($entityClass)->getAggregate($aggregationColumn, $alias, $where, $groupBy);
+		return $this->getRepository($entityClass)->getCount(where: $where, groupBy: $groupBy);
 	}
 
 	/**
@@ -102,7 +98,7 @@ readonly class EntityManager {
 	 * @param string|array|null $groupBy
 	 * @return int
 	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
 	 */
 	public function getSum(string            $entityClass,
 						   string            $aggregationColumn = 'sum(*) AS sum',
@@ -110,7 +106,7 @@ readonly class EntityManager {
 						   string|null       $where = null,
 						   string|array|null $groupBy = null
 	): int {
-		return $this->getRepository($entityClass)->getAggregate($aggregationColumn, $alias, $where, $groupBy);
+		return $this->getRepository($entityClass)->getSum($aggregationColumn, $alias, $where, $groupBy);
 
 	}
 
@@ -129,8 +125,7 @@ readonly class EntityManager {
 	 * @throws TypeError
 	 * @throws EntityError
 	 */
-	public
-	function getList(
+	public function getList(
 		string            $entityClass,
 		string|null       $where = null,
 		string|array|null $orderBy = null,
@@ -148,14 +143,13 @@ readonly class EntityManager {
 	 * @param string|null $where
 	 * @param string|null $groupBy
 	 * @return array
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 * @throws ReflectionException
 	 * @throws SQLError
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws TypeError
+	 * @throws EntityError
 	 */
-	public
-	function getListByParameters(
+	public function getListByParameters(
 		string      $entityClass,
 		array       $parameters,
 		string|null $where,
@@ -168,23 +162,21 @@ readonly class EntityManager {
 	 * @param IEntity $entity
 	 * @return int|null
 	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
 	 */
-	public
-	function insert(IEntity $entity): ?int {
+	public function insert(IEntity $entity): ?int {
 		$entityClass = get_class($entity);
 		return $this->getRepository($entityClass)->insert($entity);
 	}
 
 	/**
-	 * @param \QuickFeather\EntityManager\IEntity $entity
+	 * @param IEntity $entity
 	 * @param string $where
 	 * @return bool
 	 * @throws ReflectionException
 	 * @throws SQLError
 	 */
-	public
-	function update(IEntity $entity, string $where): bool {
+	public function update(IEntity $entity, string $where): bool {
 		$entityClass = get_class($entity);
 		return $this->getRepository($entityClass)->update($entity, $where);
 	}
@@ -196,8 +188,7 @@ readonly class EntityManager {
 	 * @throws ReflectionException
 	 * @throws SQLError
 	 */
-	public
-	function updateById(IEntity $entity, int $id): bool {
+	public function updateById(IEntity $entity, int $id): bool {
 		$entityClass = get_class($entity);
 		return $this->getRepository($entityClass)->updateById($entity, $id);
 	}
@@ -208,8 +199,7 @@ readonly class EntityManager {
 	 * @throws ReflectionException
 	 * @throws SQLError
 	 */
-	public
-	function updateEntity(IEntity $entity): bool {
+	public function updateEntity(IEntity $entity): bool {
 		$entityClass = get_class($entity);
 		return $this->getRepository($entityClass)->updateEntity($entity);
 	}
@@ -218,10 +208,9 @@ readonly class EntityManager {
 	 * @param string $entityClass
 	 * @param int $id
 	 * @return bool
-	 * @throws SQLError|ReflectionException
+	 * @throws ReflectionException
 	 */
-	public
-	function deleteById(string $entityClass, int $id): bool {
+	public function deleteById(string $entityClass, int $id): bool {
 		return $this->getRepository($entityClass)->deleteById($id);
 	}
 
@@ -229,10 +218,38 @@ readonly class EntityManager {
 	 * @param string $entityClass
 	 * @param string $where
 	 * @return bool
-	 * @throws \QuickFeather\EntityManager\Error\SQLError|ReflectionException
+	 * @throws SQLError|ReflectionException
 	 */
-	public
-	function delete(string $entityClass, string $where): bool {
+	public function delete(string $entityClass, string $where): bool {
 		return $this->getRepository($entityClass)->delete($where);
+	}
+
+	/**
+	 * @param IEntity $entity
+	 * @return bool
+	 * @throws ReflectionException
+	 */
+	public function deleteEntity(IEntity $entity): bool {
+		$entityClass = get_class($entity);
+		return $this->getRepository($entityClass)->deleteEntity($entity);
+	}
+
+	/**
+	 * @param IEntity $entity
+	 * @return string
+	 * @throws ReflectionException
+	 */
+	public function entity2json(IEntity $entity): string {
+		return $this->getRepository($entity)->entity2json($entity);
+	}
+
+	/**
+	 * @param IEntity $entity
+	 * @param array $data
+	 * @return IEntity
+	 * @throws ReflectionException
+	 */
+	public function array2entity(IEntity $entity, array $data): IEntity {
+		return $this->getRepository($entity)->array2entity($data);
 	}
 }

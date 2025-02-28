@@ -71,8 +71,8 @@ class TaxNumber implements IType, JsonSerializable {
 	 * @param int|null $specialChar
 	 * @param int|null $transform
 	 * @param int|null $all
-	 * @return \QuickFeather\EntityManager\Type\IType|TaxNumber|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @return IType|TaxNumber|null
+	 * @throws NullError
 	 * @throws TypeError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,

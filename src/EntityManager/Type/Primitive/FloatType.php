@@ -15,7 +15,7 @@ class FloatType extends BaseType implements IPrimitiveType {
 	 * @param string $identifier
 	 * @param bool $required
 	 * @return float|null
-	 * @throws \QuickFeather\EntityManager\Error\IdentifierError
+	 * @throws IdentifierError
 	 * @throws NullError
 	 */
 	public static function fromPost(string $identifier, bool $required = false): ?float {
@@ -28,8 +28,8 @@ class FloatType extends BaseType implements IPrimitiveType {
 	 * @param string $identifier
 	 * @param bool $required
 	 * @return float|null
-	 * @throws \QuickFeather\EntityManager\Error\IdentifierError
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws IdentifierError
+	 * @throws NullError
 	 */
 	public static function fromGet(string $identifier, bool $required = false): ?float {
 		self::checkIdentifier($_GET, $identifier, $required);
@@ -41,7 +41,7 @@ class FloatType extends BaseType implements IPrimitiveType {
 	 * @param mixed $value
 	 * @param bool $required
 	 * @return float|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 */
 	public static function fromVar(mixed $value, bool $required = false): ?float {
 		if ($value === null || $value === '') {

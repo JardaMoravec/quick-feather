@@ -3,7 +3,7 @@
 namespace QuickFeather\Html\Button;
 
 
-use Tool\Linker;
+use QuickFeather\Routing\Linker;
 
 class JsBackButton extends BaseButton {
 

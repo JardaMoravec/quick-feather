@@ -2,7 +2,6 @@
 
 namespace QuickFeather\EntityManager\Type\Complex;
 
-use JetBrains\PhpStorm\Immutable;
 use JsonSerializable;
 use QuickFeather\EntityManager\db;
 use QuickFeather\EntityManager\Error\EntityError;
@@ -19,12 +18,11 @@ class Email implements IType, JsonSerializable {
 
 	public const maxLength = 100;
 
-	#[immutable]
 	private string $value;
 
 	/**
 	 * @param string $email
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws EntityError
 	 */
 	public function __construct(string $email) {
 		$email = strtolower($email);
@@ -79,14 +77,14 @@ class Email implements IType, JsonSerializable {
 	 * @param int|null $specialChar
 	 * @param int|null $transform
 	 * @param int|null $all
-	 * @return \QuickFeather\EntityManager\Type\IType|static|null
+	 * @return IType|static|null
 	 * @throws NullError
 	 * @throws EntityError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,
 								   ?int  $separator = null, ?int $specialChar = null, ?int $transform = null,
-								   ?int $all = null): IType|static|null {
+								   ?int  $all = null): IType|static|null {
 		$value = StringType::fromVar($value, $required,
 			backSlash: BaseType::remove,
 			slash: BaseType::remove,
@@ -109,7 +107,7 @@ class Email implements IType, JsonSerializable {
 			throw new TypeError(_("Chybný formát emailu [$value]!"), self::class);
 		}
 		if (!checkdnsrr($domain)) {
-			throw new TypeError(_("Doména {$domain} použitá v tomto emailu neexistuje!"), self::class );
+			throw new TypeError(_("Doména {$domain} použitá v tomto emailu neexistuje!"), self::class);
 		}
 
 		return new Email($value);

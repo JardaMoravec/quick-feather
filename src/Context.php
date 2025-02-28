@@ -2,12 +2,12 @@
 
 namespace QuickFeather;
 
-use Entity\Base\Page\Page;
-use Entity\Base\Page\PageFamily;
 use PDO;
 use QuickFeather\EntityManager\EntityManager;
 use QuickFeather\EventLogger\EventLogger;
-use Tool\Linker;
+use QuickFeather\Routing\Linker;
+use Entity\Base\Page\Page;
+use Entity\Base\Page\PageFamily;
 
 
 readonly class Context {
@@ -27,16 +27,19 @@ readonly class Context {
 	 * @param Current $currentUser
 	 * @param PageFamily $pageFamily
 	 * @param Linker $link
+	 * @param EventLogger $eventLogger
+	 * @param EntityManager $entityManager
+	 * @todo přesunout definice z indexu.php
 	 */
-	public function __construct(PDO $pdo, Config $config, Current $currentUser, PageFamily $pageFamily, Linker $link) {
+	public function __construct(PDO $pdo, Config $config, Current $currentUser, PageFamily $pageFamily, Linker $link, EventLogger $eventLogger, EntityManager $entityManager) {
 		$this->pdo = $pdo;
-		$this->entityManager = new EntityManager($pdo);
+		$this->entityManager = $entityManager;
 		$this->config = $config;
 		$this->currentUser = $currentUser;
 		$this->pageFamily = $pageFamily;
 		$this->page = $this->pageFamily->getSourcePage();
 		$this->link = $link;
-		$this->eventLogger = new EventLogger($this);
+		$this->eventLogger = $eventLogger;
 		if (session_id() !== '' || session_id() !== false) {
 			$this->sessionId = (string)session_id();
 		} else {

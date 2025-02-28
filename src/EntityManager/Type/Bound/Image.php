@@ -6,8 +6,6 @@ use Entity\Cms\Gallery\SizeSetting;
 use JetBrains\PhpStorm\Immutable;
 use JsonSerializable;
 use QuickFeather\EntityManager\db;
-use QuickFeather\EntityManager\Error\EntityError;
-use QuickFeather\EntityManager\Error\NullError;
 use QuickFeather\EntityManager\Error\TypeError;
 use QuickFeather\EntityManager\Type\BaseType;
 use QuickFeather\EntityManager\Type\ComplexBaseType;
@@ -25,7 +23,6 @@ class Image implements IType, JsonSerializable {
 
 	/**
 	 * @param string $path
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
 	 */
 	public function __construct(string $path) {
 		if (strlen($path) > self::maxLength) {
@@ -100,8 +97,6 @@ class Image implements IType, JsonSerializable {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|Image|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws EntityError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

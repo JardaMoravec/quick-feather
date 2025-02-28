@@ -21,7 +21,7 @@ class IdNumber implements IType, JsonSerializable {
 
 	/**
 	 * @param string $text
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @throws TypeError
 	 */
 	public function __construct(string $text) {
 		if (strlen($text) > 12) {
@@ -72,8 +72,8 @@ class IdNumber implements IType, JsonSerializable {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|IdNumber|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @throws NullError
+	 * @throws TypeError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

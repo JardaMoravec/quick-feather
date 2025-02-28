@@ -2,29 +2,20 @@
 
 namespace QuickFeather\Html\Button;
 
-use JetBrains\PhpStorm\Immutable;
 use QuickFeather\Context;
-use Tool\Linker;
+use QuickFeather\Routing\Linker;
 
 class BaseButton {
 
 	public static Context $context;
 
-	#[immutable]
 	protected ?Linker $link;
-	#[immutable]
 	protected ?string $title;
-	#[immutable]
 	protected ?string $confirmMessage;
-	#[immutable]
 	protected ?string $icon;
-	#[immutable]
 	protected ?string $cssClass;
-	#[immutable]
 	protected bool $disable = false;
-	#[immutable]
 	protected ?string $id;
-	#[immutable]
 	protected ?array $dataAttr = [];
 
 	/**

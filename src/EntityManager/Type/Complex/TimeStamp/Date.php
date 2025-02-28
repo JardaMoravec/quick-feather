@@ -3,7 +3,6 @@
 namespace QuickFeather\EntityManager\Type\Complex\TimeStamp;
 
 use DateTime;
-use Exception;
 use JsonSerializable;
 use QuickFeather\EntityManager\db;
 use QuickFeather\EntityManager\Error\NullError;
@@ -58,13 +57,12 @@ class Date extends DateTime implements IType, JsonSerializable {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|Date|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws Exception
+	 * @throws NullError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,
 								   ?int  $separator = null, ?int $specialChar = null, ?int $transform = null,
-								   ?int $all = null): IType|Date|null {
+								   ?int  $all = null): IType|Date|null {
 		$value = StringType::fromVar($value, $required,
 			backSlash: BaseType::remove,
 			slash: BaseType::remove,

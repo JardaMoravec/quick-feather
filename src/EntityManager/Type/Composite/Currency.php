@@ -15,7 +15,7 @@ readonly class Currency implements ICompositeType, JsonSerializable {
 	/**
 	 * @param mixed $value
 	 * @param string|null $currencyCode
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws TypeError
 	 */
 	public function __construct(mixed $value, ?string $currencyCode = null) {
 		if (is_numeric($value)) {

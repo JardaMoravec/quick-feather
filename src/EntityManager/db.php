@@ -4,6 +4,7 @@ namespace QuickFeather\EntityManager;
 
 use JetBrains\PhpStorm\Pure;
 use PDO;
+use PDOException;
 use QuickFeather\EntityManager\Error\SQLError;
 use QuickFeather\EntityManager\Type\Primitive\StringType;
 
@@ -33,7 +34,6 @@ readonly class db {
 	 * @param bool $useApos
 	 * @return string
 	 */
-	#[pure]
 	public static function is(mixed $left, mixed $right, bool $useApos = false): string {
 		$right = self::valueConvert($right);
 		if ($useApos && is_string($right)) {
@@ -62,7 +62,6 @@ readonly class db {
 	 * @param mixed $term
 	 * @return string
 	 */
-	#[pure]
 	public static function isNull(mixed $term): string {
 		return $term . ' is null';
 	}
@@ -71,7 +70,6 @@ readonly class db {
 	 * @param mixed $term
 	 * @return string
 	 */
-	#[pure]
 	public static function isNotNull(mixed $term): string {
 		return $term . ' is not null';
 	}
@@ -288,7 +286,7 @@ readonly class db {
 	 * @param string|null $resultType
 	 * @return string
 	 */
-	public static function avg(string $column, string|bool|null $alias = null, string  $resultType = null): string {
+	public static function avg(string $column, string|bool|null $alias = null, string $resultType = null): string {
 		if ($alias === null || $alias === true) {
 			$alias = str_replace('.', '_', $column);
 		}
@@ -390,7 +388,7 @@ readonly class db {
 	 */
 	#[pure]
 	public static function leftJoin(string $source, string $on, ?string $alias = null): string {
-		return " LEFT JOIN " . $source . ($alias? ' ' . $alias: '') . " ON " . $on;
+		return " LEFT JOIN " . $source . ($alias ? ' ' . $alias : '') . " ON " . $on;
 	}
 
 	/**
@@ -401,7 +399,7 @@ readonly class db {
 	 */
 	#[pure]
 	public static function innerJoin(string $source, string $on, ?string $alias = null): string {
-		return " INNER JOIN " . $source . ($alias? ' ' . $alias : '' ). " ON " . $on;
+		return " INNER JOIN " . $source . ($alias ? ' ' . $alias : '') . " ON " . $on;
 	}
 
 	/**
@@ -412,7 +410,7 @@ readonly class db {
 	 */
 	#[pure]
 	public static function rightJoin(string $source, string $on, ?string $alias = null): string {
-		return " RIGHT JOIN " . $source . ($alias?  ' ' . $alias : '') . " ON " . $on;
+		return " RIGHT JOIN " . $source . ($alias ? ' ' . $alias : '') . " ON " . $on;
 	}
 
 	/**
@@ -421,8 +419,8 @@ readonly class db {
 	 * @return string
 	 */
 	#[pure]
-	public static function crossJoin(string $source, string|null $alias= null): string {
-		return " CROSS JOIN " . $source . ($alias?  ' ' . $alias : '');
+	public static function crossJoin(string $source, string|null $alias = null): string {
+		return " CROSS JOIN " . $source . ($alias ? ' ' . $alias : '');
 	}
 
 	/**
@@ -465,7 +463,7 @@ readonly class db {
 	 * @param int|null $limit
 	 * @param int|null $offset
 	 * @return string
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
+	 * @throws SQLError
 	 */
 	public static function select(string|array      $columns,
 								  string|array      $source,
@@ -542,6 +540,7 @@ readonly class db {
 	 * @param PDO $pdo
 	 * @return mixed
 	 * @throws SQLError
+	 * @throws PDOException
 	 */
 	public static function fetchValue(string $sql, PDO $pdo): mixed {
 		if ($sql === '') {
@@ -561,6 +560,7 @@ readonly class db {
 	 * @param PDO $pdo
 	 * @return array
 	 * @throws SQLError
+	 * @throws PDOException
 	 */
 	public static function fetchOne(string $sql, PDO $pdo): array {
 		if ($sql === '') {
@@ -575,6 +575,7 @@ readonly class db {
 	 * @param PDO $pdo
 	 * @return array
 	 * @throws SQLError
+	 * @throws PDOException
 	 */
 	public static function fetchAll(string $sql, PDO $pdo): array {
 		if ($sql === '') {
@@ -590,8 +591,9 @@ readonly class db {
 	 * @param string|null $alias
 	 * @return int
 	 * @throws SQLError
+	 * @throws PDOException
 	 */
-	public static function fetchCount(string $sql, PDO $pdo, ?string $alias = 'count'): int {
+	public static function fetchAggregate(string $sql, PDO $pdo, ?string $alias = 'count'): int|string {
 		if ($sql === '') {
 			throw new SQLError("SQL is empty");
 		}
@@ -605,12 +607,14 @@ readonly class db {
 	 * @param PDO $pdo
 	 * @return bool
 	 * @throws SQLError
+	 * @throws PDOException
 	 */
 	public static function run(string $sql, PDO $pdo): bool {
 		if ($sql === '') {
 			throw new SQLError("SQL is empty");
 		}
-		return $pdo->query($sql) != false;
+		$result = $pdo->query($sql);
+		return $result !== false;
 	}
 
 	/**

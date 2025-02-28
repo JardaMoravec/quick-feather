@@ -21,7 +21,7 @@ class Iban implements IType, JsonSerializable {
 
 	/**
 	 * @param string $text
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @throws TypeError
 	 */
 	public function __construct(string $text) {
 		if (strlen($text) > 34) {
@@ -72,7 +72,7 @@ class Iban implements IType, JsonSerializable {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|Iban|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 * @throws TypeError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,

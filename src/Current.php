@@ -2,11 +2,11 @@
 
 namespace QuickFeather;
 
-use Entity\Base\Role\Role;
 use Entity\User\User\Email;
 use Entity\User\User\Phone;
 use Entity\User\User\UserId;
 use QuickFeather\EntityManager\Type\Complex\String\String30;
+use Entity\Base\Role\Role;
 
 
 class Current extends UserId {

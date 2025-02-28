@@ -22,7 +22,7 @@ trait ComplexBaseType {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|ComplexBaseType|null
-	 * @throws \QuickFeather\EntityManager\Error\IdentifierError|\QuickFeather\EntityManager\Error\TypeError
+	 * @throws IdentifierError|TypeError
 	 */
 	abstract public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 											?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,
@@ -43,7 +43,7 @@ trait ComplexBaseType {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|ComplexBaseType|null
-	 * @throws IdentifierError|\QuickFeather\EntityManager\Error\TypeError
+	 * @throws IdentifierError|TypeError
 	 */
 	public static function fromPost(mixed $identifier, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 									?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,
@@ -85,7 +85,7 @@ trait ComplexBaseType {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|ComplexBaseType|null
-	 * @throws \QuickFeather\EntityManager\Error\IdentifierError|\QuickFeather\EntityManager\Error\TypeError
+	 * @throws IdentifierError|TypeError
 	 */
 	public static function fromGet(mixed $identifier, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

@@ -4,7 +4,7 @@ namespace QuickFeather\Html\Button;
 
 
 use JetBrains\PhpStorm\Immutable;
-use Tool\Linker;
+use QuickFeather\Routing\Linker;
 
 class FormSubmitButton extends BaseButton {
 

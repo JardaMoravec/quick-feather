@@ -1,6 +1,6 @@
 <?php
 
-namespace QuickFeather;
+namespace QuickFeather\Routing;
 
 interface IJsonController {
 

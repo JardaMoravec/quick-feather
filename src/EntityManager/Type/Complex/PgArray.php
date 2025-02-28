@@ -127,8 +127,8 @@ class PgArray {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|static|null
-	 * @throws \QuickFeather\EntityManager\Error\IdentifierError
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws IdentifierError
+	 * @throws NullError
 	 * @throws TypeError
 	 */
 	public static function fromPost(mixed $identifier, bool $required = false, ?int $backSlash = null, ?int $slash = null,
@@ -171,7 +171,7 @@ class PgArray {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return IType|Color|null
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 * @throws TypeError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
@@ -230,8 +230,8 @@ class PgArray {
 	 * @param int|null $transform
 	 * @param int|null $all
 	 * @return void
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws NullError
+	 * @throws EntityError
 	 */
 	public function applyFilter(bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								?int $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

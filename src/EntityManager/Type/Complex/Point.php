@@ -26,7 +26,7 @@ class Point implements IType, JsonSerializable {
 	 * @param string|null $input
 	 * @param float|null $latitude
 	 * @param float|null $longitude
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws EntityError
 	 */
 	public function __construct(?string $input = null, ?float $latitude = null, ?float $longitude = null) {
 		if ($input !== null && $input !== '') {
@@ -89,8 +89,8 @@ class Point implements IType, JsonSerializable {
 	 * @param int|null $all
 	 * @return IType|Point|null
 	 * @throws IdentifierError
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws NullError
+	 * @throws EntityError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

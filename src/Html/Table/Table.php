@@ -2,13 +2,14 @@
 
 namespace QuickFeather\Html\Table;
 
-use Exception;
+
+use JsonException;
 use QuickFeather\EntityManager\Error\NullError;
 use QuickFeather\EntityManager\IEntity;
 use QuickFeather\EntityManager\Type\BaseType;
 use QuickFeather\EntityManager\Type\Primitive\StringType;
+use QuickFeather\Routing\Linker;
 use RuntimeException;
-use Tool\Linker;
 
 
 class Table {
@@ -114,7 +115,7 @@ class Table {
 	 * @param string|null $cssClass
 	 * @param int|null $sortByColumnPosition
 	 * @param string|null $sortWay
-	 * @throws Exception
+
 	 */
 	public static function createHeader(string $name, array $columns, ?string $cssClass = null, ?int $sortByColumnPosition = null, ?string $sortWay = null): void {
 		if (count($columns) === 0) {
@@ -142,10 +143,11 @@ class Table {
 		/** @var Column $column */
 		echo "\tcolumns: [\n";
 		foreach ($columns as $column) {
+			$col = str_replace('.', '-', $column->getName());
 			if ($column->getSort()) {
-				echo "\t\t{\"data\": \"{$column->getName()}\", \"orderable\": \"true\"},\n";
+				echo "\t\t{\"data\": \"{$col}\", \"orderable\": \"true\"},\n";
 			} else {
-				echo "\t\t{\"data\": \"{$column->getName()}\", orderable: false, targets: -1},\n";
+				echo "\t\t{\"data\": \"{$col}\", orderable: false, targets: -1},\n";
 			}
 		}
 		echo "    ]\n";
@@ -161,10 +163,10 @@ class Table {
 		// header
 		echo "<thead>\n";
 		echo "<tr>\n";
-		/** @var Column $coll */
-		foreach ($columns as $coll) {
-			if ($coll->getSort()) {
-				echo "<th class=\"sorting\" >" . $coll->getLabel() . "</th>\n";
+		/** @var Column $column */
+		foreach ($columns as $column) {
+			if ($column->getSort()) {
+				echo "<th class=\"sorting\" >" . $column->getLabel() . "</th>\n";
 			} else {
 				echo "<td class=\"no-sorting\"></td>\n";
 			}
@@ -181,7 +183,8 @@ class Table {
 	 * @param array $values
 	 * @param int $totalRowCount
 	 * @param int $displayRowCount
-	 * @throws Exception
+	 * @return void
+	 * @throws RuntimeException
 	 */
 	public static function createAjax(array $columns, array $values, int $totalRowCount, int $displayRowCount): void {
 
@@ -202,7 +205,8 @@ class Table {
 					$rec = [];
 					/** @var Column $column */
 					foreach ($columns as $column) {
-						$rec[$column->getName()] = $column->render($row);
+						$col = str_replace('.', '-', $column->getName());
+						$rec[$col] = $column->render($row);
 					}
 					$output['data'][] = $rec;
 				} else {
@@ -210,13 +214,17 @@ class Table {
 				}
 			}
 		}
-		echo json_encode($output, JSON_THROW_ON_ERROR);
+		try {
+			echo json_encode($output, JSON_THROW_ON_ERROR);
+		} catch (JsonException $e) {
+			throw new RuntimeException($e->getMessage());
+		}
 	}
 
 	/**
 	 * @param array $columns
 	 * @return array
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 */
 	public static function getParameters(array $columns): array {
 		$args = [

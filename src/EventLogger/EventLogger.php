@@ -2,21 +2,14 @@
 
 namespace QuickFeather\EventLogger;
 
-use DateTime;
-use Entity\Base\Audit\Audit;
-use Entity\User\User\UserId;
 use Mpdf\Mpdf;
 use Mpdf\MpdfException;
-use QuickFeather\Context;
 use QuickFeather\Current;
+use QuickFeather\EntityManager\EntityManager;
 use QuickFeather\EntityManager\Error\EntityError;
 use QuickFeather\EntityManager\Error\SQLError;
-use QuickFeather\EntityManager\Type\Complex\String\String10;
-use QuickFeather\EntityManager\Type\Complex\String\String500;
-use ReflectionException;
+use QuickFeather\Routing\Linker;
 use Throwable;
-use Tool\Linker;
-
 
 class EventLogger implements IEventLogger {
 
@@ -28,14 +21,19 @@ class EventLogger implements IEventLogger {
 	public const EDIT = 'edit';
 	public const DELETE = 'delete';
 	public const LOGIN = 'login';
-
-	private Context $context;
+	private EntityManager $entityManager;
+	private Current $currentUser;
+	private mixed $logEventCallback;
 
 	/**
-	 * @param Context $context
+	 * @param EntityManager $entityManager
+	 * @param Current $currentUser
+	 * @param callable $logEventCallback
 	 */
-	public function __construct(Context $context) {
-		$this->context = $context;
+	public function __construct(EntityManager $entityManager, Current $currentUser, callable $logEventCallback) {
+		$this->entityManager = $entityManager;
+		$this->currentUser = $currentUser;
+		$this->logEventCallback = $logEventCallback;
 	}
 
 	/**
@@ -43,15 +41,12 @@ class EventLogger implements IEventLogger {
 	 * @param string $type
 	 * @param Current|null $user
 	 * @return int
-	 * @throws ReflectionException
-	 * @throws \QuickFeather\EntityManager\Error\SQLError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
 	 */
 	public function logEvent(string $message, string $type, Current|null $user = null): int {
 		$link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 
 		if ($user === null) {
-			$user = $this->context->currentUser;
+			$user = $this->currentUser;
 		}
 
 		// get ip
@@ -61,26 +56,15 @@ class EventLogger implements IEventLogger {
 			$host = "localhost";
 		}
 
-		$entity = new Audit(
-			0,
-			new String500(substr($message, 0, 500)),
-			new String500(substr($host, 0, 500)),
-			new String500(substr($link, 0, 500)),
-			new DateTime(),
-			new String10(substr($type, 0, 10)),
-			$user->isRealUser ? new UserId($user->id) : null
-		);
-
-		return $this->context->entityManager->insert($entity);
+		return ($this->logEventCallback)($this->entityManager, $message, $host, $link, $type, $user);
 	}
 
 	/**
 	 * @param Throwable $e
 	 * @param Current|null $user
 	 * @return int
-	 * @throws ReflectionException
 	 * @throws SQLError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws EntityError
 	 */
 	public function logException(Throwable $e, Current|null $user = null): int {
 		return $this->logEvent($e->getMessage(), self::ERROR, $user);
@@ -90,20 +74,16 @@ class EventLogger implements IEventLogger {
 	 * @param Throwable $e
 	 * @param Current|null $user
 	 * @return void
-	 * @throws ReflectionException
 	 * @throws SQLError
 	 * @throws EntityError
 	 */
 	public function logFatalException(Throwable $e, Current|null $user = null): void {
 		if ($user === null) {
-			$user = $this->context->currentUser;
+			$user = $this->currentUser;
 		}
 
-		// db log is off when db is not connected
-		$id = null;
-		if ($this->context->pdo) {
-			$id = $this->logEvent($e->getMessage(), self::FATAL, $user);
-		}
+		$id = $this->logEvent($e->getMessage(), self::FATAL, $user);
+
 		$html = '<html lang="cz">';
 		$html .= '<head><title>' . $e->getMessage() . '</title>';
 		$html .= '<meta charset="utf-8">';
@@ -127,11 +107,8 @@ class EventLogger implements IEventLogger {
 		$html .= '</body>';
 		$html .= '</html>';
 
-		if ($id !== null) {
-			$filename = "error_" . $id;
-		} else {
-			$filename = "error_" . date("Y-m-d_H-i-s");
-		}
+		$filename = "error_" . $id;
+
 		try {
 			$mpdf = new Mpdf();
 			$mpdf->title = $filename;

@@ -6,7 +6,6 @@ use DateTime;
 use Entity\Base\AdminHelp\AdminHelp;
 use Entity\Base\Page\PageId;
 use Entity\Cms\BlackWord\BlackWord;
-use Exception;
 use QuickFeather\Context;
 use QuickFeather\EntityManager\Error\EntityError;
 use QuickFeather\EntityManager\Error\IdentifierError;
@@ -28,12 +27,12 @@ use QuickFeather\EntityManager\Type\Primitive\BoolType;
 use QuickFeather\EntityManager\Type\Primitive\FloatType;
 use QuickFeather\EntityManager\Type\Primitive\IntType;
 use QuickFeather\EntityManager\Type\Primitive\StringType;
+use QuickFeather\EventLogger\Message;
 use QuickFeather\Html\Form\Css\BoxCSSClass;
 use QuickFeather\Html\Form\Css\FormCSSClass;
 use QuickFeather\Html\ToolBar;
+use QuickFeather\Routing\Linker;
 use RuntimeException;
-use Tool\Linker;
-use Tool\Message;
 
 
 class FormEntity {
@@ -55,7 +54,7 @@ class FormEntity {
 	/**
 	 * @param Linker $action
 	 * @param array $helpText
-	 * @param \QuickFeather\EntityManager\Repository|null $repository
+	 * @param Repository|null $repository
 	 * @param string|null $enctype
 	 * @param IEntity|array|null $defaultData
 	 * @param array $additionalFields
@@ -67,7 +66,6 @@ class FormEntity {
 	 * @param array|null $optionList
 	 * @param array|null $pathList
 	 * @param bool|null $showEmptyHelpBox
-	 * @throws Exception
 	 */
 	public function __construct(Linker  $action, array $helpText, Repository|null $repository = null,
 								?string $enctype = null, IEntity|array|null $defaultData = null,
@@ -83,7 +81,6 @@ class FormEntity {
 		$this->showEmptyHelpBox = $showEmptyHelpBox;
 
 		if ($this->repository !== null) {
-			/** @noinspection PhpUndefinedMethodInspection */
 			$fields = $this->repository->getProperties();
 
 			foreach ($fields as $field) {
@@ -136,7 +133,6 @@ class FormEntity {
 	/**
 	 * @param ToolBar|null $toolbar
 	 * @return void
-	 * @throws Exception
 	 */
 	public function startForm(ToolBar $toolbar = null): void {
 		if ($this->id) {
@@ -207,7 +203,7 @@ class FormEntity {
 	 */
 	protected function getValue(IEntity|array|null $data, array $field): mixed {
 		if (is_array($data)) {
-			$value = ($data[$field['dbname']]) ?? null;
+			$value = ($data[$field['const'] ?? $field['name']]) ?? null;
 		} else if ($data instanceof IEntity) {
 			$namePath = explode(':', $field['name']);
 			$value = $data;
@@ -258,8 +254,7 @@ class FormEntity {
 	 * @param array|null $attributes
 	 * @param string|null $placeholder
 	 * @return void
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws Exception
+	 * @throws NullError
 	 */
 	public function renderInput(string $identifier, ?string $label = null, ?string $id = null, ?string $description = null,
 								?bool  $readOnly = false, ?array $dataAttributes = [], ?FormCSSClass $cssClass = null,
@@ -357,7 +352,6 @@ class FormEntity {
 	 * @param bool|null $withConfirmField
 	 * @return void
 	 * @throws NullError
-	 * @throws Exception
 	 */
 	public function renderPassword(string  $identifier, ?string $label = null, ?string $id = null, ?string $description = null,
 								   ?bool   $readOnly = false, ?array $dataAttributes = [], ?FormCSSClass $cssClass = null, ?array $events = [],
@@ -464,11 +458,10 @@ class FormEntity {
 	 * @param bool|null $labelBefore
 	 * @param bool|null $activeDelete
 	 * @param bool|null $preview
-	 * @param \QuickFeather\Context|null $context
+	 * @param Context|null $context
 	 * @param bool $ignoreType
 	 * @return void
 	 * @throws NullError
-	 * @throws Exception
 	 * @todo improvizovaně přidán $context
 	 */
 	public function renderUpload(string $identifier, ?string $label = null, ?string $id = null, ?string $description = null,
@@ -539,8 +532,7 @@ class FormEntity {
 	 * @param int|null $extension
 	 * @param array|null $attributes
 	 * @return void
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws Exception
+	 * @throws NullError
 	 */
 	public function renderTextarea(string $identifier, ?string $label = null, ?string $id = null, ?string $description = null,
 								   ?bool  $readOnly = false, ?array $dataAttributes = [], ?FormCSSClass $cssClass = null,
@@ -606,7 +598,6 @@ class FormEntity {
 	 * @param array|null $attributes
 	 * @return void
 	 * @throws NullError
-	 * @throws Exception
 	 */
 	public function renderCheckbox(string $identifier, ?string $label = null, ?string $id = null, ?string $description = null,
 								   ?bool  $readOnly = false, ?array $dataAttributes = [], ?FormCSSClass $cssClass = null,
@@ -671,7 +662,6 @@ class FormEntity {
 	 * @param bool|null $showAllOption
 	 * @return void
 	 * @throws NullError
-	 * @throws Exception
 	 */
 	public function renderCheckboxList(string $identifier, ?string $label = null, ?string $id = null, ?string $description = null,
 									   ?bool  $readOnly = false, ?array $dataAttributes = [], ?FormCSSClass $cssClass = null,
@@ -745,8 +735,7 @@ class FormEntity {
 	 * @param bool|null $multiple
 	 * @param bool|null $renderOnlyField
 	 * @return void
-	 * @throws \QuickFeather\EntityManager\Error\NullError
-	 * @throws Exception
+	 * @throws NullError
 	 */
 	public function renderSelect(string $identifier, ?string $label = null, ?string $id = null, ?string $description = null,
 								 ?bool  $readOnly = false, ?array $dataAttributes = [], ?FormCSSClass $cssClass = null,
@@ -823,7 +812,6 @@ class FormEntity {
 	 * @param array|null $attributes
 	 * @return void
 	 * @throws NullError
-	 * @throws Exception
 	 */
 	public function renderRangeInput(string $identifier, ?string $label = null, ?string $id = null, ?string $description = null,
 									 ?bool  $readOnly = false, ?array $dataAttributes = [], ?FormCSSClass $cssClass = null,
@@ -953,19 +941,17 @@ class FormEntity {
 	 * @throws EntityError
 	 */
 	public function getPostedData(?bool $setPostedDataAsDefault = true): array|null {
-
 		foreach ($this->fields as $field) {
-			if (!$field['used']) {
+			if (!array_key_exists('used', $field) || !$field['used']) {
 				continue;
 			}
 
 			try {
-				$this->postedData[$field['dbName']] = $this->getPostedValue($field);
+				$this->postedData[$field['const'] ?? $field['name']] = $this->getPostedValue($field);
 			} catch (NullError|TypeError $error) {
-				$this->errors[$field['dbName']] = $error->getMessage();
+				$this->errors[$field['const'] ?? $field['name']] = $error->getMessage();
 			}
 		}
-
 		if ($setPostedDataAsDefault) {
 			$this->defaultData = $this->postedData;
 		}
@@ -975,7 +961,7 @@ class FormEntity {
 	/**
 	 * @param bool|null $setPostedDataAsDefault
 	 * @param callable|null $beforeEvents
-	 * @return \QuickFeather\EntityManager\IEntity
+	 * @return IEntity
 	 * @throws EntityError
 	 */
 	public function getPostedEntity(?bool $setPostedDataAsDefault = true, ?callable $beforeEvents = null): IEntity {
@@ -998,13 +984,10 @@ class FormEntity {
 		}
 
 		if ($this->defaultData instanceof IEntity) {
-			/** @noinspection PhpUndefinedMethodInspection */
 			$entity = $this->repository->fillFromArray($this->defaultData, $postedValues);
 		} else if ($this->defaultData !== null) {
-			/** @noinspection PhpUndefinedMethodInspection */
 			$entity = $this->repository->array2entity(array_merge($this->defaultData, $postedValues));
 		} else {
-			/** @noinspection PhpUndefinedMethodInspection */
 			$entity = $this->repository->array2entity($postedValues);
 		}
 
@@ -1018,9 +1001,8 @@ class FormEntity {
 	 * @param $field
 	 * @return bool|float|int|mixed|null
 	 * @throws IdentifierError
-	 * @throws \QuickFeather\EntityManager\Error\NullError
+	 * @throws NullError
 	 * @throws EntityError
-	 * @throws Exception
 	 */
 	private function getPostedValue($field): mixed {
 		if (class_exists($field['type'])) {
@@ -1029,44 +1011,32 @@ class FormEntity {
 			$interfaces = [];
 		}
 
-		if (str_contains($field['type'], 'MultiString')) {
-			return $field['type']::fromPost($field['name'], !$field['null']);
-
-		}
-
 		if (str_contains($field['type'], 'String')) {
 			return $field['type']::fromPost($field['name'], !$field['null']);
-
 		}
 
 		if ($field['type'] === 'string') {
 			return StringType::fromPost($field['name'], !$field['null']);
-
 		}
 
 		if ($field['type'] === 'bool') {
 			return BoolType::fromPost($field['name'], !$field['null']);
-
 		}
 
 		if ($field['type'] === 'int') {
 			return IntType::fromPost($field['name'], !$field['null']);
-
 		}
 
 		if ($field['type'] === 'float') {
 			return FloatType::fromPost($field['name'], !$field['null']);
-
 		}
 
 		if ($field['type'] === DateTime::class) {
 			return DateTimeType::fromPost($field['name'], !$field['null']);
-
 		}
 
 		if (in_array(IType::class, $interfaces, true)) {
 			return ($field['type'])::fromPost($field['name'], !$field['null']);
-
 		}
 
 		if (in_array(IEntity::class, $interfaces, true)) {

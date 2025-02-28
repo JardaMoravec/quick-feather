@@ -3,7 +3,7 @@
 namespace QuickFeather\EntityManager\Type\Complex\TimeStamp;
 
 use DateTime;
-use Exception;
+
 use JsonSerializable;
 use QuickFeather\EntityManager\db;
 use QuickFeather\EntityManager\Error\EntityError;
@@ -50,10 +50,10 @@ class Time extends DateTime implements IType, JsonSerializable {
 	 * @param string $identifier
 	 * @param bool $required
 	 * @return ?Time
-	 * @throws \QuickFeather\EntityManager\Error\IdentifierError
+	 * @throws IdentifierError
 	 * @throws NullError
 	 * @throws EntityError
-	 * @throws Exception
+
 	 */
 	public static function fromPost(string $identifier, bool $required = false): ?Time {
 		$value = StringType::fromPost($identifier, $required,
@@ -82,9 +82,9 @@ class Time extends DateTime implements IType, JsonSerializable {
 	 * @param int|null $specialChar
 	 * @param int|null $transform
 	 * @param int|null $all
-	 * @return \QuickFeather\EntityManager\Type\IType|Time|null
+	 * @return IType|Time|null
 	 * @throws NullError
-	 * @throws Exception
+
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

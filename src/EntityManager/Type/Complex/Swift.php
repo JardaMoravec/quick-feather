@@ -21,7 +21,7 @@ class Swift implements IType, JsonSerializable {
 
 	/**
 	 * @param string $text
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @throws TypeError
 	 */
 	public function __construct(string $text) {
 		if (strlen($text) > 11) {
@@ -71,9 +71,9 @@ class Swift implements IType, JsonSerializable {
 	 * @param int|null $specialChar
 	 * @param int|null $transform
 	 * @param int|null $all
-	 * @return \QuickFeather\EntityManager\Type\IType|Swift|null
+	 * @return IType|Swift|null
 	 * @throws NullError
-	 * @throws \QuickFeather\EntityManager\Error\TypeError
+	 * @throws TypeError
 	 */
 	public static function fromVar(mixed $value, bool $required = false, ?int $backSlash = null, ?int $slash = null,
 								   ?int  $quote = null, ?int $whiteSpace = null, ?int $html = null, ?int $diacritic = null,

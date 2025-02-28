@@ -1,0 +1,52 @@
+name: bazarexpress
+services:
+  database:
+    build: ./.docker/db/
+    container_name: bazarexpress_database
+    image: bazarexpress/postgres:14.5
+    restart: always
+    environment:
+      - TZ=Europe/Prague
+      - POSTGRES_DB=bazarexpress
+      - POSTGRES_PASSWORD=bazar123
+    volumes:
+      - ./db-data:/var/lib/postgresql/data:rw
+      - ./.docker/db/dump.sql:/docker-entrypoint-initdb.d/dump.sql:r
+    ports:
+      - "5436:5432"
+    networks:
+      - docker_network
+
+  backend:
+    build:
+      context: ./
+      dockerfile: ./.docker/php/Dockerfile
+    image: bazarexpress/php:8.2-apache-1.12
+    container_name: bazarexpress_backend
+    ports:
+      - "888:80"   # Port for Apache
+      - "9903:9903" # Port for Xdebug
+    volumes:
+      - ./config:/var/www/html/bazarexpress/config:rw
+      - ./data:/var/www/html/bazarexpress/data:rw
+      - ./db:/var/www/html/bazarexpress/db:ro
+      - ./logs:/var/www/html/bazarexpress/logs:rw
+      - ./src:/var/www/html/bazarexpress/src:rw
+      - ./quick-feather:/var/www/html/bazarexpress/quick-feather:rw
+      - ./static:/var/www/html/bazarexpress/static:rw
+      - ./tests:/var/www/html/bazarexpress/tests:ro
+      - ./index.php:/var/www/html/bazarexpress/index.php:ro
+      - ./manage.php:/var/www/html/bazarexpress/manage.php:ro
+      - ./composer.json:/var/www/html/bazarexpress/composer.json:rw
+      - ./E500.html:/var/www/html/bazarexpress/E500.html:ro
+    environment:
+      - PHP_EXTENSION=mbstring,pdo_pgsql,pgsql,bz2,curl,fileinfo,gd,gettext,intl,imap,exif,xdebug
+    restart: always
+    depends_on:
+      - database
+    networks:
+      - docker_network
+
+networks:
+  docker_network:
+    name: docker_network

@@ -1,11 +1,13 @@
 <?php
 
-namespace QuickFeather;
+namespace QuickFeather\Routing;
 
 use Dao\Base\AdminHelp\AdminHelpDao;
 use Entity\Base\AdminHelp\AdminHelp;
-use Exception;
+
 use PDO;
+use QuickFeather\Config;
+use QuickFeather\Context;
 use QuickFeather\EntityManager\db;
 use QuickFeather\EntityManager\Error\SQLError;
 use ReflectionException;
@@ -26,7 +28,7 @@ abstract class BaseController {
 	protected array $helpText;
 
 	/**
-	 * @param \QuickFeather\Context $context
+	 * @param Context $context
 	 * @throws ReflectionException
 	 * @throws SQLError
 	 */
@@ -43,7 +45,7 @@ abstract class BaseController {
 	}
 
 	/**
-	 * @throws Exception
+
 	 */
 	public function renderTemplate(): void {
 		if ($this->templatePath !== null && $this->templatePath !== '') {
@@ -100,7 +102,7 @@ abstract class BaseController {
 	}
 
 	/**
-	 * @return \QuickFeather\Config
+	 * @return Config
 	 */
 	public function getConfig(): Config {
 		return $this->context->config;
@@ -130,7 +132,7 @@ abstract class BaseController {
 
 	/**
 	 * @return void
-	 * @throws \QuickFeather\NotFoundError
+	 * @throws NotFoundError
 	 * @throws ReflectionException
 	 */
 	public function insertContent(): void {

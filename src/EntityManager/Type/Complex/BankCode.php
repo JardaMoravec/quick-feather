@@ -21,7 +21,7 @@ class BankCode implements IType, JsonSerializable {
 
 	/**
 	 * @param string $text
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws EntityError
 	 */
 	public function __construct(string $text) {
 		if (strlen($text) > 4) {
@@ -64,7 +64,7 @@ class BankCode implements IType, JsonSerializable {
 	 * @return BankCode
 	 * @throws IdentifierError
 	 * @throws NullError
-	 * @throws \QuickFeather\EntityManager\Error\EntityError
+	 * @throws EntityError
 	 */
 	public static function fromPost(string $identifier, bool $required = false): BankCode {
 		$value = StringType::fromPost($identifier, $required,
